@@ -8,9 +8,52 @@ import requests
 import bs4
 import time
 
+def DECKFILE_func():
+    """カード名ファイルが変更された際に呼び出される関数
 
-# WisdomギルドからGatherを検索→mageUrl取得→Gatherから保存する関数
-def search_wisdom_image(maisu, folderPath, cardname):
+    """    
+
+    if os.path.exists(values['-DECKFILE-']):
+        with open(values['-DECKFILE-'], mode='r') as f:
+            #data1 = f.read().split('\n')
+            data1 = f.read()
+            window['-LIST-'].update(data1)
+            print('File loaded.')
+    else:
+        print('File not found.')
+
+def WISDOM_func():
+    """WISDOMボタンを押したときに呼び出される関数
+    """    
+
+    # フォルダパス取得
+    folderPath = values['-FOLDER-']
+
+    # ポップアップ
+    for singleLine in values['-LIST-'].split("\n"):
+        if singleLine != "":
+            splitedLine = singleLine.split(maxsplit=1)
+            if len(splitedLine) == 1 and splitedLine[0].isnumeric() == False:
+                # 分割した要素が1つ＝カード名直接で数字でなければそのままカード名を使う
+                search_wisdom_image(folderPath, splitedLine[0], 1)
+            elif len(splitedLine) == 2 and splitedLine[0].isnumeric() == True:
+                # 分割した要素が2つ＝枚数＆カード名なら枚数を使う
+                search_wisdom_image(folderPath, splitedLine[1],int(splitedLine[0]))
+            window.refresh()
+            # Wisdomの負荷軽減のため3秒待機
+            time.sleep(3)
+
+    print("Finish Create Proxy!")
+    sg.popup("Finish!")
+
+def search_wisdom_image(folderPath, cardname,maisu) :
+    """WisdomギルドからGatherを検索→ImageUrl取得→Gatherから保存する関数
+
+    Args:
+        folderPath (str): 保存フォルダパス
+        cardname (str): カード名：英語表記
+        maisu (int): カード枚数
+    """
     base_url = 'http://whisper.wisdom-guild.net/card/'
     wisdom_url = base_url+urllib.parse.quote(cardname)
     wisdom_response = requests.get(wisdom_url)
@@ -104,7 +147,6 @@ def search_SDK_image(maisu, folderPath, cardname):
 
 
 #  セクション1 - オプションの設定と標準レイアウト
-print("Booted!")
 sg.theme('Dark Blue 3')
 
 layout = [
@@ -123,68 +165,45 @@ layout = [
 ]
 
 # セクション 2 - ウィンドウの生成
-print("Create Layout")
 window = sg.Window('MTG Proxy v0.10', layout)
 
 # セクション 3 - イベントループ
-print("Start Event loop")
+# ハンドラ設定
+handler = {
+    '-DECKFILE-': DECKFILE_func,
+    'Wisdom': WISDOM_func,
+}
+
 while True:
     event, values = window.read()
 
-    print(event)
+    print(event, values)
 
     if event in (None, '終了'):
         print("exit")
         break
+        
+    function = handler[event]  # handlerからeventに応じた関数を呼び出す
+    function()
 
-    if event == '-DECKFILE-':
+    # if event == '実行':
+    #     # フォルダパス取得
+    #     folderPath = values['-FOLDER-']
 
-        if os.path.exists(values['-DECKFILE-']):
-            with open(values['-DECKFILE-'], mode='r') as f:
-                data1 = f.read().split('\n')
-                window['-LIST-'].update(data1)
-                print('File loaded')
-        else:
-            print('File not found.')
+    #     # ポップアップ
+    #     for singleLine in window['-LIST-'].GetListValues():
+    #         splitedLine = singleLine.split(maxsplit=1)
+    #         if len(splitedLine) == 1 and splitedLine[0].isnumeric() == False:
+    #             # 分割した要素が1つ＝カード名直接で数字でなければそのままカード名を使う
+    #             search_SDK_image(1, folderPath, splitedLine[0])
+    #         elif len(splitedLine) == 2 and splitedLine[0].isnumeric() == True:
+    #             # 分割した要素が2つ＝枚数＆カード名なら枚数を使う
+    #             search_SDK_image(int(splitedLine[0]), folderPath, splitedLine[1])
+    #         window.refresh()
 
-    if event == '実行':
-        # フォルダパス取得
-        folderPath = values['-FOLDER-']
+    #     print("Finish Create Proxy!")
+    #     sg.popup("Finish!")
 
-        # ポップアップ
-        for singleLine in window['-LIST-'].GetListValues():
-            splitedLine = singleLine.split(' ', maxsplit=1)
-            if len(splitedLine) == 1 and splitedLine[0].isnumeric() == False:
-                # 分割した要素が1つ＝カード名直接で数字でなければそのままカード名を使う
-                search_SDK_image(1, folderPath, splitedLine[0])
-            elif len(splitedLine) == 2 and splitedLine[0].isnumeric() == True:
-                # 分割した要素が2つ＝枚数＆カード名なら枚数を使う
-                search_SDK_image(int(splitedLine[0]), folderPath, splitedLine[1])
-            window.refresh()
-
-        print("Finish Create Proxy!")
-        sg.popup("Finish!")
-
-    if event == 'Wisdom':
-        # フォルダパス取得
-        folderPath = values['-FOLDER-']
-
-        # ポップアップ
-        for singleLine in window['-LIST-'].GetListValues():
-            if singleLine != "":
-                splitedLine = singleLine.split(' ', maxsplit=1)
-                if len(splitedLine) == 1 and splitedLine[0].isnumeric() == False:
-                    # 分割した要素が1つ＝カード名直接で数字でなければそのままカード名を使う
-                    search_wisdom_image(1, folderPath, splitedLine[0])
-                elif len(splitedLine) == 2 and splitedLine[0].isnumeric() == True:
-                    # 分割した要素が2つ＝枚数＆カード名なら枚数を使う
-                    search_wisdom_image(int(splitedLine[0]), folderPath, splitedLine[1])
-                window.refresh()
-                # Wisdomの負荷軽減のため3秒待機
-                time.sleep(3)
-
-        print("Finish Create Proxy!")
-        sg.popup("Finish!")
 
 
 # セクション 4 - ウィンドウの破棄と終了
