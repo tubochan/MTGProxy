@@ -117,8 +117,14 @@ def search_wisdom_image(folderPath, cardname,maisu) :
             shutil.copy(folderPath + "\\" + out_file_name, folderPath + "\\" + copySakiName)
 
 
-# MTGSDKのAPIカード検索→ImageUrl取得→Gatherから保存する関数
 def search_SDK_image(maisu, folderPath, cardname):
+    """MTGSDKのAPIカード検索→ImageUrl取得→Gatherから保存する関数
+
+    Args:
+        folderPath (str): 保存フォルダパス
+        cardname (str): カード名：英語表記
+        maisu (int): カード枚数
+    """
     # カード名でAPI検索
     target_card = Card.where(name=cardname).all()
     # 見つかったカード名（4ED、5EDなど複数出てくる）それぞれでfor each
@@ -185,26 +191,6 @@ while True:
         
     function = handler[event]  # handlerからeventに応じた関数を呼び出す
     function()
-
-    # if event == '実行':
-    #     # フォルダパス取得
-    #     folderPath = values['-FOLDER-']
-
-    #     # ポップアップ
-    #     for singleLine in window['-LIST-'].GetListValues():
-    #         splitedLine = singleLine.split(maxsplit=1)
-    #         if len(splitedLine) == 1 and splitedLine[0].isnumeric() == False:
-    #             # 分割した要素が1つ＝カード名直接で数字でなければそのままカード名を使う
-    #             search_SDK_image(1, folderPath, splitedLine[0])
-    #         elif len(splitedLine) == 2 and splitedLine[0].isnumeric() == True:
-    #             # 分割した要素が2つ＝枚数＆カード名なら枚数を使う
-    #             search_SDK_image(int(splitedLine[0]), folderPath, splitedLine[1])
-    #         window.refresh()
-
-    #     print("Finish Create Proxy!")
-    #     sg.popup("Finish!")
-
-
 
 # セクション 4 - ウィンドウの破棄と終了
 window.close()
