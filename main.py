@@ -1,5 +1,4 @@
 from mtgsdk import Card
-import pickle
 import urllib.request
 import urllib.parse
 import os
@@ -7,7 +6,6 @@ import PySimpleGUI as sg
 import shutil
 import requests
 import bs4
-import lxml
 import time
 
 
@@ -117,14 +115,14 @@ layout = [
     ],
     [sg.Text('出力先フォルダ', size=(15, 1)), sg.InputText('./image', key='-FOLDER-'), sg.FolderBrowse('フォルダ指定')],
     [sg.Text('カードリスト', size=(15, 1))],
-    [sg.Listbox([],size=(100, 30), key='-LIST-')],
+    [sg.Multiline(size=(100, 30), key='-LIST-')],
     [sg.Text('実行ログ')],
     [sg.Output(size=(100,7), key='-Log-')],
     [sg.Submit(button_text='実行'), sg.Submit(button_text='Wisdom'), sg.Submit(button_text='終了')]
 ]
 
 # セクション 2 - ウィンドウの生成
-window = sg.Window('MTG Proxy v0.1', layout)
+window = sg.Window('MTG Proxy v0.10', layout)
 
 # セクション 3 - イベントループ
 while True:
