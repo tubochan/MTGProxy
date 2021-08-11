@@ -22,6 +22,30 @@ def DECKFILE_func():
     else:
         print('File not found.')
 
+def MTGSDK_func():
+    """MTGSDKボタンを押したときに呼び出される関数
+    """    
+
+    # フォルダパス取得
+    folderPath = values['-FOLDER-']
+
+    # ポップアップ
+    for singleLine in values['-LIST-'].split("\n"):
+        if singleLine != "":
+            splitedLine = singleLine.split(maxsplit=1)
+            if len(splitedLine) == 1 and splitedLine[0].isnumeric() == False:
+                # 分割した要素が1つ＝カード名直接で数字でなければそのままカード名を使う
+                search_SDK_image(folderPath, splitedLine[0], 1)
+            elif len(splitedLine) == 2 and splitedLine[0].isnumeric() == True:
+                # 分割した要素が2つ＝枚数＆カード名なら枚数を使う
+                search_SDK_image(folderPath, splitedLine[1],int(splitedLine[0]))
+            window.refresh()
+            # SDKの負荷軽減のため1秒待機
+            time.sleep(1)
+
+    print("Finish Create Proxy!")
+    sg.popup("Finish!")
+
 def WISDOM_func():
     """WISDOMボタンを押したときに呼び出される関数
     """    
@@ -118,7 +142,7 @@ def search_wisdom_image(folderPath, cardname,maisu) :
 
 
 # MTGSDKのAPIカード検索→ImageUrl取得→Gatherから保存する関数
-def search_SDK_image(maisu, folderPath, cardname):
+def search_SDK_image(folderPath, cardname,maisu):
     # カード名でAPI検索
     target_card = Card.where(name=cardname).all()
     # 見つかったカード名（4ED、5EDなど複数出てくる）それぞれでfor each
@@ -138,9 +162,11 @@ def search_SDK_image(maisu, folderPath, cardname):
                     if maisu >= 2:
                         # 枚数が2以上なら枚数増やしてコピー
                         for i in range(2, maisu+1):
-                            copySakiName = singleLanguage['name'] + '(' + i + ').jpg'
-                            print(folderPath+copySakiName)
-                            shutil.copy(folderPath + "\\"+ out_file_name, folderPath+ "\\"+copySakiName)
+                            out_file_name = singleLanguage['name'] + "(" + str(i) + ").jpg"
+                            print("{}".format(out_file_name))
+                            with open(folderPath + "\\"+ out_file_name, "wb") as out_file:
+                                print(folderPath + "\\"+ out_file_name)
+                                out_file.write(image_data)
 
                     #1枚でも見つかったらreturnで関数抜ける
                     return
@@ -161,7 +187,7 @@ layout = [
     [sg.Multiline(size=(100, 30), key='-LIST-')],
     [sg.Text('実行ログ')],
     [sg.Output(size=(100,7), key='-Log-')],
-    [sg.Submit(button_text='実行'), sg.Submit(button_text='Wisdom'), sg.Submit(button_text='終了')]
+    [sg.Submit(button_text='MTGSDK'), sg.Submit(button_text='Wisdom'), sg.Submit(button_text='終了')]
 ]
 
 # セクション 2 - ウィンドウの生成
@@ -171,6 +197,7 @@ window = sg.Window('MTG Proxy v0.10', layout)
 # ハンドラ設定
 handler = {
     '-DECKFILE-': DECKFILE_func,
+    'MTGSDK': MTGSDK_func,
     'Wisdom': WISDOM_func,
 }
 
@@ -185,26 +212,6 @@ while True:
         
     function = handler[event]  # handlerからeventに応じた関数を呼び出す
     function()
-
-    # if event == '実行':
-    #     # フォルダパス取得
-    #     folderPath = values['-FOLDER-']
-
-    #     # ポップアップ
-    #     for singleLine in window['-LIST-'].GetListValues():
-    #         splitedLine = singleLine.split(maxsplit=1)
-    #         if len(splitedLine) == 1 and splitedLine[0].isnumeric() == False:
-    #             # 分割した要素が1つ＝カード名直接で数字でなければそのままカード名を使う
-    #             search_SDK_image(1, folderPath, splitedLine[0])
-    #         elif len(splitedLine) == 2 and splitedLine[0].isnumeric() == True:
-    #             # 分割した要素が2つ＝枚数＆カード名なら枚数を使う
-    #             search_SDK_image(int(splitedLine[0]), folderPath, splitedLine[1])
-    #         window.refresh()
-
-    #     print("Finish Create Proxy!")
-    #     sg.popup("Finish!")
-
-
 
 # セクション 4 - ウィンドウの破棄と終了
 window.close()
