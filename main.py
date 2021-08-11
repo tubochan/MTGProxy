@@ -104,6 +104,7 @@ def search_SDK_image(maisu, folderPath, cardname):
 
 
 #  セクション1 - オプションの設定と標準レイアウト
+print("Booted!")
 sg.theme('Dark Blue 3')
 
 layout = [
@@ -122,16 +123,18 @@ layout = [
 ]
 
 # セクション 2 - ウィンドウの生成
+print("Create Layout")
 window = sg.Window('MTG Proxy v0.10', layout)
 
 # セクション 3 - イベントループ
+print("Start Event loop")
 while True:
     event, values = window.read()
 
     print(event)
 
     if event in (None, '終了'):
-        print('exit')
+        print("exit")
         break
 
     if event == '-DECKFILE-':
