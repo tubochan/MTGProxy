@@ -141,8 +141,14 @@ def search_wisdom_image(folderPath, cardname,maisu) :
             shutil.copy(folderPath + "\\" + out_file_name, folderPath + "\\" + copySakiName)
 
 
-# MTGSDKのAPIカード検索→ImageUrl取得→Gatherから保存する関数
-def search_SDK_image(folderPath, cardname,maisu):
+def search_SDK_image(maisu, folderPath, cardname):
+    """MTGSDKのAPIカード検索→ImageUrl取得→Gatherから保存する関数
+
+    Args:
+        folderPath (str): 保存フォルダパス
+        cardname (str): カード名：英語表記
+        maisu (int): カード枚数
+    """
     # カード名でAPI検索
     target_card = Card.where(name=cardname).all()
     # 見つかったカード名（4ED、5EDなど複数出てくる）それぞれでfor each
