@@ -7,6 +7,7 @@ import shutil
 import requests
 import bs4
 import time
+import re
 
 def CLEAR_func():
     """クリアボタンが押された際に呼び出される関数
@@ -17,12 +18,10 @@ def CLEAR_func():
 
 def DECKFILE_func():
     """カード名ファイルが変更された際に呼び出される関数
-
     """    
 
     if os.path.exists(values['-DECKFILE-']):
         with open(values['-DECKFILE-'], mode='r') as f:
-            #data1 = f.read().split('\n')
             data1 = f.read()
             window['-LIST-'].update(data1)
             print('File loaded.')
@@ -39,13 +38,18 @@ def MTGSDK_func():
     # ポップアップ
     for singleLine in values['-LIST-'].split("\n"):
         if singleLine != "":
-            splitedLine = singleLine.split(maxsplit=1)
-            if len(splitedLine) == 1 and splitedLine[0].isnumeric() == False:
-                # 分割した要素が1つ＝カード名直接で数字でなければそのままカード名を使う
-                search_SDK_image(folderPath, splitedLine[0], 1)
-            elif len(splitedLine) == 2 and splitedLine[0].isnumeric() == True:
-                # 分割した要素が2つ＝枚数＆カード名なら枚数を使う
-                search_SDK_image(folderPath, splitedLine[1],int(splitedLine[0]))
+            # regexpを使って「枚数 カード名」形式かどうか確認
+            if re.search("^\d+\s.+$", singleLine):
+                # 枚数 カード名とみなして分割
+                splitedLine = singleLine.split(maxsplit=1)
+                cardname = splitedLine[1]
+                maisu = int(splitedLine[0])
+            else:
+                # カード名単体とみなす、枚数は1
+                cardname = singleLine
+                maisu = 1
+            # 取得したカード名と枚数を使って画像取得
+            search_SDK_image(folderPath, cardname, maisu)
             window.refresh()
             # SDKの負荷軽減のため1秒待機
             time.sleep(1)
@@ -166,7 +170,7 @@ def search_SDK_image(folderPath, cardname,maisu):
             if singleCard.foreign_names is not None:
                 for singleLanguage in singleCard.foreign_names:
                     # 日本語が見つかって、imageUrlが出てくれば日本語画像を取得
-                    if singleLanguage['language'] == 'Japanese' and singleLanguage['imageUrl'] is not None:
+                    if singleLanguage['language'] == 'Japanese' and 'imageUrl' in singleLanguage :
                         # 画像保存する関数を使って保存
                         save_image_by_url(folderPath, singleLanguage['imageUrl'], cardname, maisu)
 
@@ -229,12 +233,12 @@ layout = [
         sg.InputText('テキストファイル名', key='-DECKFILE-', enable_events=True),
         sg.FileBrowse('テキスト読み込み', key='-FILES-', file_types=(('MO形式テキストファイル', ('*.txt', '*.dek')),))
     ],
-    [sg.Text('出力先フォルダ', size=(15, 1)), sg.InputText('./image', key='-FOLDER-'), sg.FolderBrowse('フォルダ指定')],
+    # [sg.Text('出力先フォルダ', size=(15, 1)), sg.InputText('./image', key='-FOLDER-'), sg.FolderBrowse('フォルダ指定')],
+    [sg.Text('出力先フォルダ', size=(15, 1)), sg.InputText(os.path.expanduser('~\Pictures\MTGProxy'), key='-FOLDER-'), sg.FolderBrowse('フォルダ指定')],
     [sg.Text('カードリスト', size=(15, 1))],
     [sg.Multiline(size=(100, 30), key='-LIST-')],
     [sg.Text('実行ログ')],
     [sg.Output(size=(100,7), key='-Log-')],
-    # [sg.Submit(button_text='MTGSDK'), sg.Submit(button_text='Wisdom'), sg.Submit(button_text='終了')]
     [sg.Submit(button_text='Proxy作成'), sg.Submit(button_text='クリア'), sg.Submit(button_text='終了')]
 ]
 
