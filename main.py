@@ -8,6 +8,13 @@ import requests
 import bs4
 import time
 
+def CLEAR_func():
+    """クリアボタンが押された際に呼び出される関数
+        入力リストの中身を削除する
+    """
+    if event in (None, 'クリア'):
+        window['-LIST-'].update('')
+
 def DECKFILE_func():
     """カード名ファイルが変更された際に呼び出される関数
 
@@ -228,7 +235,7 @@ layout = [
     [sg.Text('実行ログ')],
     [sg.Output(size=(100,7), key='-Log-')],
     # [sg.Submit(button_text='MTGSDK'), sg.Submit(button_text='Wisdom'), sg.Submit(button_text='終了')]
-    [sg.Submit(button_text='MTGSDK'), sg.Submit(button_text='終了')]
+    [sg.Submit(button_text='Proxy作成'), sg.Submit(button_text='クリア'), sg.Submit(button_text='終了')]
 ]
 
 # セクション 2 - ウィンドウの生成
@@ -238,15 +245,17 @@ window = sg.Window('MTG Proxy v0.10', layout)
 # ハンドラ設定
 handler = {
     '-DECKFILE-': DECKFILE_func,
-    'MTGSDK': MTGSDK_func,
+    'Proxy作成': MTGSDK_func,
     'Wisdom': WISDOM_func,
+    'クリア': CLEAR_func
 }
 
 while True:
     event, values = window.read()
 
-    print(event, values)
+    # print(event, values)
 
+    # 終了ボタン
     if event in (None, '終了'):
         print("exit")
         break
