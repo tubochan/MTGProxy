@@ -227,7 +227,8 @@ layout = [
     [sg.Multiline(size=(100, 30), key='-LIST-')],
     [sg.Text('実行ログ')],
     [sg.Output(size=(100,7), key='-Log-')],
-    [sg.Submit(button_text='MTGSDK'), sg.Submit(button_text='Wisdom'), sg.Submit(button_text='終了')]
+    # [sg.Submit(button_text='MTGSDK'), sg.Submit(button_text='Wisdom'), sg.Submit(button_text='終了')]
+    [sg.Submit(button_text='MTGSDK'), sg.Submit(button_text='終了')]
 ]
 
 # セクション 2 - ウィンドウの生成
