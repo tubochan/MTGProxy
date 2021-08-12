@@ -141,7 +141,7 @@ def search_wisdom_image(folderPath, cardname,maisu) :
             shutil.copy(folderPath + "\\" + out_file_name, folderPath + "\\" + copySakiName)
 
 
-def search_SDK_image(maisu, folderPath, cardname):
+def search_SDK_image(folderPath, cardname,maisu):
     """MTGSDKのAPIカード検索→ImageUrl取得→Gatherから保存する関数
 
     Args:
@@ -150,34 +150,68 @@ def search_SDK_image(maisu, folderPath, cardname):
         maisu (int): カード枚数
     """
     # カード名でAPI検索
-    target_card = Card.where(name=cardname).all()
-    # 見つかったカード名（4ED、5EDなど複数出てくる）それぞれでfor each
-    for singleCard in target_card:
-        if singleCard.foreign_names is not None:
-            for singleLanguage in singleCard.foreign_names:
-                if singleLanguage['language'] == 'Japanese' and singleLanguage['imageUrl'] is not None:
-                    image_request = urllib.request.urlopen(singleLanguage['imageUrl'])
-                    image_data = image_request.read()
-                    out_file_name = singleLanguage['name'] + ".jpg"
-                    print("{}".format(out_file_name))
-                    os.makedirs(folderPath, exist_ok=True)
-                    with open(folderPath + "\\"+ out_file_name, "wb") as out_file:
-                        print(folderPath + "\\"+ out_file_name)
-                        out_file.write(image_data)
+    target_cards = Card.where(name=cardname).all()
+    # 見つかったカード名（4ED,5EDなど複数出てくる）それぞれでfor each
+    for singleCard in target_cards:
+        # 部分一致で検索にひっかかる（The Abyss→Magus of the Abyssもひっかかる）のでカード名完全一致も見る
+        if singleCard.name == cardname:
+            # 見つかったカード名にforeign_names要素があればそれをfor eachで深堀り
+            if singleCard.foreign_names is not None:
+                for singleLanguage in singleCard.foreign_names:
+                    # 日本語が見つかって、imageUrlが出てくれば日本語画像を取得
+                    if singleLanguage['language'] == 'Japanese' and singleLanguage['imageUrl'] is not None:
+                        # 画像保存する関数を使って保存
+                        save_image_by_url(folderPath, singleLanguage['imageUrl'], cardname, maisu)
 
-                    if maisu >= 2:
-                        # 枚数が2以上なら枚数増やしてコピー
-                        for i in range(2, maisu+1):
-                            out_file_name = singleLanguage['name'] + "(" + str(i) + ").jpg"
-                            print("{}".format(out_file_name))
-                            with open(folderPath + "\\"+ out_file_name, "wb") as out_file:
-                                print(folderPath + "\\"+ out_file_name)
-                                out_file.write(image_data)
+                        #1枚でも見つかったらreturnで関数抜ける
+                        return
+    
+    # 日本語カード名が見つからなかった場合ここ
+    # 再度for eachで検索結果をループ
+    for singleCard in target_cards:
+        # 部分一致で検索にひっかかる（The Abyss→Magus of the Abyssもひっかかる）のでカード名完全一致も見る
+        if singleCard.name == cardname:
+            # 最初に見つかった画像を保存、なぜかcards直下はimage_urlになるので表記変更
+            save_image_by_url(folderPath, singleCard.image_url, cardname, maisu)
+            # returnで関数抜ける
+            return
 
-                    #1枚でも見つかったらreturnで関数抜ける
-                    return
+    # 英語カード名も見つからなかった場合ここ
+    # エラーメッセージを表示して終了
+    print(cardname + "は見つかりませんでした")
+
+def save_image_by_url(folderPath, imgUrl, cardname, maisu):
+    """imgUrlの画像をfolderPathにcardnameの名前でmaisu分だけ保存する関数
+
+    Args:
+        folderPath (str): 保存フォルダパス
+        imgUrl (str): 画像URL
+        cardname (str): カード名：英語表記
+        maisu (int): カード枚数
+    """
+
+    image_request = urllib.request.urlopen(imgUrl)
+    image_data = image_request.read()
+    out_file_name = cardname + ".jpg"
+    print("{}".format(out_file_name))
+    os.makedirs(folderPath, exist_ok=True)
+    with open(folderPath + "\\"+ out_file_name, "wb") as out_file:
+        print(folderPath + "\\"+ out_file_name)
+        out_file.write(image_data)
+
+    if maisu >= 2:
+        # 枚数が2以上なら枚数増やしてコピー
+        for i in range(2, maisu+1):
+            out_file_name = cardname + "(" + str(i) + ").jpg"
+            print("{}".format(out_file_name))
+            with open(folderPath + "\\"+ out_file_name, "wb") as out_file:
+                print(folderPath + "\\"+ out_file_name)
+                out_file.write(image_data)
 
 
+# ～～～関数記述ここまで～～～
+
+# ～～～MAIN部ここから～～～
 #  セクション1 - オプションの設定と標準レイアウト
 sg.theme('Dark Blue 3')
 
